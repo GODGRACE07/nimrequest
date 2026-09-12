@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NimRequest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink-navy: #1E2A3D;
+    --ink-navy-light: #2B3A52;
+    --parchment: #F6F0E4;
+    --parchment-dim: #EAE1CC;
+    --parchment-card: #FFFCF5;
+    --sage: #5C8374;
+    --sage-dim: #E4ECE8;
+    --amber: #D9A441;
+    --amber-dim: #F7ECD8;
+    --rust: #B5654A;
+    --rust-dim: #F3E2DB;
+    --ink-text: #2B2620;
+    --ink-text-soft: #786D5B;
+    --shadow-soft: 0 2px 10px rgba(30,42,61,0.06);
+    --shadow-lift: 0 8px 24px rgba(30,42,61,0.12);
+  }
+
+  * { scrollbar-width: thin; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--ink-navy);
+    color: var(--ink-text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .phone {
+    width: 100%; max-width: 430px; background: var(--parchment);
+    min-height: 100vh; display: flex; flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.3); position: relative;
+  }
+
+  @media (max-width: 380px) {
+    header { padding: 24px 16px 20px; }
+    main { padding: 16px 14px 110px; }
+    .hero-step { padding: 12px 8px; }
+    .req-card { padding: 15px; }
+  }
+
+  header {
+    background: linear-gradient(155deg, var(--ink-navy) 0%, var(--ink-navy-light) 100%);
+    color: var(--parchment); padding: 30px 22px 26px; position: relative; overflow: hidden;
+  }
+  header::after {
+    content: ''; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(217,164,65,0.15) 0%, transparent 70%);
+    animation: driftGlow 8s ease-in-out infinite;
+  }
+  @keyframes driftGlow { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-10px,10px); } }
+  .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .mark {
+    width: 30px; height: 30px; background: var(--amber); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 800; color: var(--ink-navy); font-size: 1rem; flex-shrink: 0;
+    animation: markPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes markPop { 0% { transform: scale(0) rotate(-15deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  header .wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.45rem; letter-spacing: -0.01em; }
+  header .tagline { font-size: 0.86rem; color: #B7C2D4; line-height: 1.4; max-width: 300px; }
+  .network-tag {
+    display: inline-block; margin-top: 10px; padding: 3px 10px; border-radius: 999px;
+    background: rgba(217,164,65,0.18); color: var(--amber); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  }
+
+  main { flex: 1; padding: 20px 18px 110px; position: relative; }
+
+  .view { display: none; }
+  .view.active { display: block; animation: viewIn 0.35s ease; }
+  @keyframes viewIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+
+  .hero-explainer { display: flex; gap: 12px; margin-bottom: 22px; }
+  .hero-step {
+    flex: 1; background: var(--parchment-card); border-radius: 14px; padding: 14px 10px;
+    text-align: center; box-shadow: var(--shadow-soft); opacity: 0; animation: stepIn 0.4s ease forwards;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .hero-step:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+  .hero-step:nth-child(1) { animation-delay: 0.05s; }
+  .hero-step:nth-child(2) { animation-delay: 0.18s; }
+  .hero-step:nth-child(3) { animation-delay: 0.31s; }
+  @keyframes stepIn { from { opacity: 0; transform: translateY(8px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .hero-step .icon { font-size: 1.3rem; margin-bottom: 6px; display: inline-block; }
+  .hero-step .txt { font-size: 0.7rem; color: var(--ink-text-soft); line-height: 1.35; font-weight: 500; }
+
+  .setup-box { background: var(--parchment-card); border-radius: 18px; padding: 22px 20px; box-shadow: var(--shadow-soft); }
+  .setup-box .label { font-size: 0.8rem; color: var(--ink-text-soft); margin-bottom: 12px; font-weight: 600; }
+
+  input, select {
+    width: 100%; padding: 13px 14px; border-radius: 10px; border: 1.5px solid #E3D9C0;
+    background: #fff; color: var(--ink-text); font-size: 0.92rem; margin-bottom: 11px;
+    font-family: 'Inter', sans-serif; transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(217,164,65,0.15); }
+  input::placeholder { color: #A79E8A; }
+
+  .btn {
+    width: 100%; padding: 14px; background: var(--ink-navy); color: var(--parchment);
+    border: none; border-radius: 12px; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.15s ease; font-family: 'Inter', sans-serif;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lift); }
+  .btn:active { transform: translateY(0) scale(0.98); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn.amber { background: var(--amber); color: var(--ink-navy); }
+  .btn.small { padding: 10px; font-size: 0.82rem; }
+  .btn.outline { background: transparent; border: 1.5px solid var(--ink-navy); color: var(--ink-navy); box-shadow: none; }
+  .btn.ghost { background: transparent; color: var(--ink-text-soft); font-size: 0.8rem; padding: 8px; font-weight: 500; width: auto; }
+
+  .wallet-choice { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--ink-text-soft); font-size: 0.75rem; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--parchment-dim); }
+
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: currentColor;
+    border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: -3px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .wallet-reveal {
+    background: var(--sage-dim); border-radius: 12px; padding: 14px; margin-top: 14px;
+    font-size: 0.78rem; color: var(--ink-text); line-height: 1.5; animation: cardIn 0.3s ease;
+  }
+  .wallet-reveal .addr { font-family: monospace; font-size: 0.72rem; word-break: break-all; margin-top: 4px; color: var(--sage); font-weight: 700; }
+
+  .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; background: var(--parchment-dim); padding: 4px; border-radius: 12px; }
+  .type-option { flex: 1; padding: 10px; border-radius: 9px; text-align: center; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--ink-text-soft); transition: all 0.2s ease; }
+  .type-option.active { background: var(--ink-navy); color: var(--parchment); box-shadow: var(--shadow-soft); }
+
+  section { margin-bottom: 28px; }
+  .section-label { font-size: 0.72rem; color: var(--ink-text-soft); margin-bottom: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .req-card {
+    background: var(--parchment-card); border-radius: 16px; padding: 18px; margin-bottom: 12px;
+    box-shadow: var(--shadow-soft); opacity: 0; animation: cardIn 0.35s ease forwards;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .req-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+  .req-card.just-settled { animation: cardIn 0.35s ease forwards, settleFlash 1.2s ease 0.35s; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes settleFlash { 0% { box-shadow: var(--shadow-soft); } 30% { box-shadow: 0 0 0 3px var(--sage), 0 8px 24px rgba(92,131,116,0.3); } 100% { box-shadow: var(--shadow-soft); } }
+  .req-card .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .req-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 8px; }
+  .req-icon.instant { background: var(--amber-dim); }
+  .req-icon.escrow { background: var(--sage-dim); }
+  .req-card .desc { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.08rem; line-height: 1.25; }
+  .req-card .meta { font-size: 0.8rem; color: var(--ink-text-soft); margin-top: 3px; }
+  .req-card .amount { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.2rem; white-space: nowrap; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; }
+  .badge.pending { background: var(--amber-dim); color: #8a6420; }
+  .badge.funded { background: #E4ECF7; color: #3a5a8c; }
+  .badge.settled { background: var(--sage-dim); color: var(--sage); animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .badge.disputed { background: var(--rust-dim); color: var(--rust); }
+  @keyframes badgePop { 0% { transform: scale(0.7); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+  .shimmer-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: shimmerPulse 1.3s ease-in-out infinite; }
+  @keyframes shimmerPulse { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+  .req-actions { margin-top: 12px; }
+  .waiting-note { font-size: 0.8rem; color: var(--ink-text-soft); font-style: italic; display: flex; align-items: center; gap: 6px; }
+  .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  .proof-link { font-size: 0.8rem; color: var(--sage); margin-top: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: gap 0.15s ease; }
+  .proof-link:hover { gap: 8px; text-decoration: underline; }
+
+  .streak-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 4px; border-bottom: 1px solid var(--parchment-dim); opacity: 0; animation: cardIn 0.3s ease forwards; }
+  .streak-row:last-child { border-bottom: none; }
+  .streak-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.95rem; }
+  .streak-meta { font-size: 0.74rem; color: var(--ink-text-soft); margin-top: 2px; }
+  .streak-badge { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .streak-badge.hit { background: var(--sage-dim); }
+  .streak-badge.miss { background: var(--amber-dim); }
+
+  .empty-note { font-size: 0.85rem; color: var(--ink-text-soft); line-height: 1.55; padding: 4px 2px; }
+  .empty-card { background: var(--parchment-card); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft); }
+
+  /* --- Loading skeletons --- */
+  .skeleton-card {
+    background: var(--parchment-card); border-radius: 16px; padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow-soft);
+  }
+  .skeleton-bar { background: linear-gradient(90deg, var(--parchment-dim) 25%, #F5EEDC 50%, var(--parchment-dim) 75%); background-size: 200% 100%; animation: shimmerBar 1.4s ease-in-out infinite; border-radius: 6px; }
+  @keyframes shimmerBar { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skeleton-bar.title { width: 60%; height: 16px; margin-bottom: 8px; }
+  .skeleton-bar.sub { width: 40%; height: 12px; margin-bottom: 12px; }
+  .skeleton-bar.pill { width: 70px; height: 20px; border-radius: 999px; }
+
+  nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px;
+    background: rgba(246,240,228,0.92); backdrop-filter: blur(8px); border-top: 1px solid var(--parchment-dim);
+    display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 20px; gap: 8px;
+  }
+  .nav-item { font-size: 0.8rem; color: var(--ink-navy); font-weight: 700; letter-spacing: 0.03em; flex-shrink: 0; }
+  .nav-balance { font-size: 0.72rem; color: var(--ink-text-soft); font-weight: 600; flex-shrink: 0; transition: color 0.15s ease; }
+  .nav-balance:hover { color: var(--amber); }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(30,42,61,0.72); display: none; align-items: center; justify-content: center; z-index: 10; padding: 20px; }
+  .modal-backdrop.active { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal { background: var(--parchment-card); border-radius: 20px; padding: 26px 22px; width: 100%; max-width: 380px; max-height: 82vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.85) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .seal { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(155deg, var(--sage) 0%, #4A6D5F 100%); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; margin: 0 auto 14px; box-shadow: 0 6px 16px rgba(92,131,116,0.35); animation: sealSpin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards; }
+  @keyframes sealSpin { from { transform: scale(0) rotate(-90deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+  .modal h3 { font-family: 'Fraunces', serif; text-align: center; font-size: 1.2rem; margin-bottom: 2px; }
+  .modal .modal-sub { text-align: center; font-size: 0.8rem; color: var(--ink-text-soft); margin-bottom: 18px; }
+  .proof-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 10px 0; border-bottom: 1px solid var(--parchment-dim); opacity: 0; animation: rowSlideIn 0.3s ease forwards; }
+  .proof-row:nth-child(1) { animation-delay: 0.15s; } .proof-row:nth-child(2) { animation-delay: 0.22s; }
+  .proof-row:nth-child(3) { animation-delay: 0.29s; } .proof-row:nth-child(4) { animation-delay: 0.36s; } .proof-row:nth-child(5) { animation-delay: 0.43s; }
+  @keyframes rowSlideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .proof-row .k { color: var(--ink-text-soft); font-weight: 500; }
+  .proof-row .v { text-align: right; font-weight: 600; }
+  .tx-hash-box { background: var(--ink-navy); color: var(--sage); border-radius: 10px; padding: 12px; font-size: 0.7rem; word-break: break-all; margin-top: 14px; font-family: 'Inter', monospace; line-height: 1.5; }
+  .tx-hash-box .lbl { color: #B7C2D4; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.72rem; margin-bottom: 6px; display: block; }
+
+  /* --- Toast notifications (replaces native alert()) --- */
+  #toast-container {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 400px; padding: 0 16px; z-index: 100;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+  .toast {
+    background: var(--ink-navy); color: var(--parchment);
+    padding: 13px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    display: flex; align-items: center; gap: 10px;
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), toastOut 0.25s ease 2.7s forwards;
+  }
+  .toast.error { background: var(--rust); }
+  .toast.success { background: var(--sage); }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-14px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.97); } }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="phone">
+  <header>
+    <div class="brand-row">
+      <div class="mark">N</div>
+      <div class="wordmark">NimRequest</div>
+    </div>
+    <div class="tagline">Ask anyone to pay you back — with proof, in one tap.</div>
+    <div class="network-tag">⚡ Nimiq Testnet — free to try, no real funds</div>
+  </header>
+
+  <main>
+    <!-- SETUP -->
+    <div class="view active" id="view-setup">
+      <div class="hero-explainer">
+        <div class="hero-step"><div class="icon">✍️</div><div class="txt">Request what's owed</div></div>
+        <div class="hero-step"><div class="icon">🔒</div><div class="txt">Held till confirmed</div></div>
+        <div class="hero-step"><div class="icon">✅</div><div class="txt">Settled with proof</div></div>
+      </div>
+
+      <div class="setup-box" id="wallet-choice-box">
+        <div class="label">Get started</div>
+        <div class="wallet-choice">
+          <input type="text" id="my-id" placeholder="Pick a name (e.g. alice)">
+          <button class="btn amber" id="btn-create-wallet">✨ Create my wallet (instant, free)</button>
+        </div>
+        <div class="wallet-reveal" id="wallet-reveal" style="display:none;">
+          <b>Your wallet is ready!</b>
+          <div>We've also sent you free test NIM to try the app.</div>
+          <div class="addr" id="wallet-reveal-addr"></div>
+        </div>
+        <div class="divider">or</div>
+        <button class="btn ghost" id="btn-show-existing" style="width:100%;">I already have a Nimiq testnet address</button>
+        <div id="existing-wallet-fields" style="display:none; margin-top:10px;">
+          <input type="text" id="my-address" placeholder="Your Nimiq address (NQ...)">
+          <button class="btn" id="btn-use-existing">Continue with this address</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="view" id="view-home">
+      <section>
+        <div class="section-label">New request</div>
+        <div class="setup-box">
+          <div class="type-toggle">
+            <div class="type-option active" data-type="instant">Simple debt</div>
+            <div class="type-option" data-type="escrow">Held until confirmed</div>
+          </div>
+          <input type="text" id="req-description" placeholder="What's it for? (e.g. Dinner split)">
+          <input type="text" id="req-counterparty-id" placeholder="Who owes you? (their name)">
+          <input type="text" id="req-counterparty-address" placeholder="Their Nimiq address (NQ...)">
+          <input type="number" id="req-amount" placeholder="Amount (NIM)" step="0.01">
+          <input type="number" id="req-deadline" placeholder="Deadline (hours, escrow only)" style="display:none;">
+          <button class="btn" id="btn-create-request">Send request</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">Your requests</div>
+        <div id="requests-list"></div>
+        <div class="empty-card" id="requests-empty" style="display:none;">
+          <div class="empty-note">No requests yet — create one above to get started.</div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-label">Settle streak</div>
+        <div class="empty-card" id="streak-box">
+          <div class="empty-note">Shows how promptly people you've dealt with have paid — no scores, no shaming, just a quiet, honest record.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav>
+    <div class="nav-item">NimRequest</div>
+    <button class="btn ghost" id="btn-topup" style="display:none;">🔄 Get more test NIM</button>
+    <div class="nav-balance" id="nav-balance" style="display:none; cursor:pointer; text-decoration:underline;"></div>
+  </nav>
+</div>
+
+<div class="modal-backdrop" id="proof-modal">
+  <div class="modal">
+    <div class="seal">✓</div>
+    <h3>Verified settlement</h3>
+    <div class="modal-sub">This isn't a claim — it's a receipt.</div>
+    <div id="proof-content"></div>
+    <button class="btn outline" id="btn-close-proof" style="margin-top:16px;">Close</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="wallet-modal">
+  <div class="modal">
+    <div class="seal" style="background:linear-gradient(155deg, var(--amber) 0%, #b8862f 100%);">👛</div>
+    <h3>Your wallet</h3>
+    <div class="modal-sub">Share this address so others can send you NIM</div>
+    <div class="tx-hash-box">
+      <span class="lbl">Your Nimiq address</span>
+      <span id="my-wallet-address-display"></span>
+    </div>
+    <button class="btn amber" id="btn-copy-address" style="margin-top:14px;">📋 Copy address</button>
+    <button class="btn outline" id="btn-close-wallet" style="margin-top:10px;">Close</button>
+  </div>
+</div>
+
+<script>
+const SERVER_URL = 'http://localhost:3002'
+let myId = null
+let myAddress = null
+
+// --- Toast notifications: replaces every native alert() ---
+function showToast(message, type = 'default') {
+  const container = document.getElementById('toast-container')
+  const toast = document.createElement('div')
+  toast.className = 'toast' + (type !== 'default' ? ' ' + type : '')
+  const icon = type === 'error' ? '⚠️' : type === 'success' ? '✓' : 'ℹ️'
+  toast.innerHTML = `<span>${icon}</span><span>${message}</span>`
+  container.appendChild(toast)
+  setTimeout(() => toast.remove(), 3000)
+}
+
+function getSeenSettled() {
+  try { return JSON.parse(localStorage.getItem('nimrequest_seen_settled') || '{}') } catch { return {} }
+}
+function markSeenSettled(id) {
+  const seen = getSeenSettled()
+  seen[id] = true
+  localStorage.setItem('nimrequest_seen_settled', JSON.stringify(seen))
+}
+
+function enterHomeView() {
+  document.getElementById('view-setup').classList.remove('active')
+  document.getElementById('view-home').classList.add('active')
+  document.getElementById('nav-balance').style.display = 'block'
+  document.getElementById('nav-balance').textContent = myId
+  document.getElementById('btn-topup').style.display = 'block'
+  showRequestsSkeleton()
+  refreshRequests()
+}
+
+function showRequestsSkeleton() {
+  const list = document.getElementById('requests-list')
+  document.getElementById('requests-empty').style.display = 'none'
+  list.innerHTML = Array(2).fill(`
+    <div class="skeleton-card">
+      <div class="skeleton-bar title"></div>
+      <div class="skeleton-bar sub"></div>
+      <div class="skeleton-bar pill"></div>
+    </div>
+  `).join('')
+}
+
+// --- Wallet creation flow ---
+document.getElementById('btn-create-wallet').addEventListener('click', async () => {
+  const name = document.getElementById('my-id').value.trim()
+  if (!name) { showToast('Pick a name first', 'error'); return }
+
+  const btn = document.getElementById('btn-create-wallet')
+  btn.disabled = true
+  btn.innerHTML = '<span class="spinner"></span>Creating your wallet...'
+
+  try {
+    const res = await fetch(`${SERVER_URL}/api/wallet/generate`, { method: 'POST' })
+    const data = await res.json()
+
+    myId = name
+    myAddress = data.address
+
+    localStorage.setItem('nimrequest_id', myId)
+    localStorage.setItem('nimrequest_address', myAddress)
+    localStorage.setItem('nimrequest_privkey', data.privateKeyHex)
+
+    document.getElementById('wallet-reveal-addr').textContent = myAddress
+    document.getElementById('wallet-reveal').style.display = 'block'
+    showToast('Wallet created and funded!', 'success')
+
+    setTimeout(enterHomeView, 1400)
+  } catch (err) {
+    showToast('Wallet creation failed: ' + err.message, 'error')
+    btn.disabled = false
+    btn.innerHTML = '✨ Create my wallet (instant, free)'
+  }
+})
+
+document.getElementById('btn-show-existing').addEventListener('click', () => {
+  document.getElementById('existing-wallet-fields').style.display = 'block'
+})
+
+document.getElementById('btn-use-existing').addEventListener('click', () => {
+  const name = document.getElementById('my-id').value.trim()
+  const address = document.getElementById('my-address').value.trim()
+  if (!name || !address) { showToast('Enter both a name and an address', 'error'); return }
+  myId = name
+  myAddress = address
+  localStorage.setItem('nimrequest_id', myId)
+  localStorage.setItem('nimrequest_address', myAddress)
+  enterHomeView()
+})
+
+// --- Top up test NIM ---
+document.getElementById('btn-topup').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-topup')
+  btn.disabled = true
+  btn.textContent = 'Sending...'
+  try {
+    const res = await fetch(`${SERVER_URL}/api/wallet/topup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: myAddress }),
+    })
+    const data = await res.json()
+    btn.textContent = data.ok ? '✓ Sent!' : 'Failed'
+    showToast(data.ok ? 'Test NIM is on its way!' : 'Faucet request failed', data.ok ? 'success' : 'error')
+  } catch (err) {
+    btn.textContent = 'Failed'
+    showToast('Top-up failed: ' + err.message, 'error')
+  }
+  setTimeout(() => { btn.disabled = false; btn.textContent = '🔄 Get more test NIM' }, 2500)
+})
+
+// --- View my wallet address anytime ---
+document.getElementById('nav-balance').addEventListener('click', () => {
+  document.getElementById('my-wallet-address-display').textContent = myAddress
+  document.getElementById('wallet-modal').classList.add('active')
+})
+
+document.getElementById('btn-close-wallet').addEventListener('click', () => {
+  document.getElementById('wallet-modal').classList.remove('active')
+})
+
+document.getElementById('btn-copy-address').addEventListener('click', () => {
+  navigator.clipboard.writeText(myAddress)
+  const btn = document.getElementById('btn-copy-address')
+  btn.textContent = '✓ Copied!'
+  showToast('Address copied to clipboard', 'success')
+  setTimeout(() => { btn.textContent = '📋 Copy address' }, 1500)
+})
+
+// --- Auto-login if we already have a saved identity ---
+window.addEventListener('DOMContentLoaded', () => {
+  const savedId = localStorage.getItem('nimrequest_id')
+  const savedAddress = localStorage.getItem('nimrequest_address')
+  if (savedId && savedAddress) {
+    myId = savedId
+    myAddress = savedAddress
+    enterHomeView()
+  }
+})
+
+document.querySelectorAll('.type-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.type-option').forEach(o => o.classList.remove('active'))
+    opt.classList.add('active')
+    const isEscrow = opt.dataset.type === 'escrow'
+    document.getElementById('req-deadline').style.display = isEscrow ? 'block' : 'none'
+  })
+})
+
+function getSelectedType() { return document.querySelector('.type-option.active').dataset.type }
+
+document.getElementById('btn-create-request').addEventListener('click', async () => {
+  const type = getSelectedType()
+  const description = document.getElementById('req-description').value.trim()
+  const toId = document.getElementById('req-counterparty-id').value.trim()
+  const toAddress = document.getElementById('req-counterparty-address').value.trim()
+  const amount = parseFloat(document.getElementById('req-amount').value)
+  const deadlineHours = parseFloat(document.getElementById('req-deadline').value) || 24
+
+  if (!description || !toId || !toAddress || !amount) { showToast('Fill in all fields', 'error'); return }
+
+  const body = { type, description, amount, fromId: myId, fromAddress: myAddress, toId, toAddress }
+  if (type === 'escrow') body.deadlineHours = deadlineHours
+
+  try {
+    const res = await fetch(`${SERVER_URL}/api/requests`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (data.error) { showToast(data.error, 'error'); return }
+    ;['req-description','req-counterparty-id','req-counterparty-address','req-amount'].forEach(id => document.getElementById(id).value = '')
+    showToast('Request sent!', 'success')
+    refreshRequests()
+  } catch (err) { showToast('Failed to create request: ' + err.message, 'error') }
+})
+
+async function refreshRequests() {
+  try {
+    const res = await fetch(`${SERVER_URL}/api/users/${myId}`)
+    const data = await res.json()
+    renderRequests(data.requests || [])
+    renderStreak(data.streak || [])
+  } catch (err) {
+    console.error('Failed to load requests:', err)
+    document.getElementById('requests-list').innerHTML = ''
+    document.getElementById('requests-empty').style.display = 'block'
+    document.getElementById('requests-empty').innerHTML = '<div class="empty-note">⚠️ Could not reach the server. Make sure it\'s running, then refresh.</div>'
+  }
+}
+
+const typeIcon = { instant: '💸', escrow: '🔒' }
+const typeLabel = { instant: 'Simple debt', escrow: 'Held until confirmed' }
+
+function renderRequests(requests) {
+  const list = document.getElementById('requests-list')
+  const empty = document.getElementById('requests-empty')
+  list.innerHTML = ''
+  if (requests.length === 0) { empty.style.display = 'block'; return }
+  empty.style.display = 'none'
+
+  const seenSettled = getSeenSettled()
+
+  requests.sort((a, b) => b.createdAt - a.createdAt).forEach((r, idx) => {
+    const iAmOwed = r.fromId === myId
+    const card = document.createElement('div')
+
+    const justSettled = r.status === 'settled' && !seenSettled[r.id]
+    card.className = 'req-card' + (justSettled ? ' just-settled' : '')
+    card.style.animationDelay = (idx * 0.06) + 's'
+    if (r.status === 'settled') markSeenSettled(r.id)
+
+    let actionsHtml = ''
+    if (r.type === 'escrow') {
+      if (r.status === 'pending' && !iAmOwed) {
+        actionsHtml = `<button class="btn small amber" onclick="fundRequest('${r.id}')">Fund escrow</button>`
+      } else if (r.status === 'funded') {
+        const alreadyConfirmed = (iAmOwed && r.confirmedByFrom) || (!iAmOwed && r.confirmedByTo)
+        actionsHtml = alreadyConfirmed
+          ? `<div class="waiting-note"><span class="pulse-dot"></span>Waiting on the other side to confirm...</div>`
+          : `<button class="btn small" onclick="confirmRequest('${r.id}')">Confirm ${iAmOwed ? 'work received' : 'satisfied, release funds'}</button>`
+      }
+    } else if (r.type === 'instant' && r.status === 'pending' && !iAmOwed) {
+      actionsHtml = `<button class="btn small amber" onclick="confirmInstant('${r.id}')">Pay now</button>`
+    }
+
+    const badgeContent = (r.status === 'pending' || r.status === 'funded') ? `<span class="shimmer-dot"></span>${r.status}` : r.status
+    const proofHtml = r.status === 'settled' ? `<div class="proof-link" onclick="showProof('${r.id}')">✓ Show proof of settlement →</div>` : ''
+
+    card.innerHTML = `
+      <div class="req-icon ${r.type}">${typeIcon[r.type]}</div>
+      <div class="top-row">
+        <div>
+          <div class="desc">${r.description}</div>
+          <div class="meta">${iAmOwed ? `${r.toId} owes you` : `You owe ${r.fromId}`} · ${typeLabel[r.type]}</div>
+        </div>
+        <div class="amount">${r.amount} NIM</div>
+      </div>
+      <span class="badge ${r.status}">${badgeContent}</span>
+      <div class="req-actions">${actionsHtml}</div>
+      ${proofHtml}
+    `
+    list.appendChild(card)
+  })
+}
+
+function renderStreak(streak) {
+  const box = document.getElementById('streak-box')
+  if (streak.length === 0) {
+    box.innerHTML = `<div class="empty-note">Shows how promptly people you've dealt with have paid — no scores, no shaming, just a quiet, honest record.</div>`
+    return
+  }
+  box.innerHTML = streak.map((s, idx) => `
+    <div class="streak-row" style="animation-delay:${idx * 0.08}s">
+      <div>
+        <div class="streak-name">Request #${s.requestId.slice(0,6)}</div>
+        <div class="streak-meta">${s.hoursToSettle.toFixed(1)}h to settle</div>
+      </div>
+      <div class="streak-badge ${s.prompt ? 'hit' : 'miss'}">${s.prompt ? '✓' : '⏱'}</div>
+    </div>
+  `).join('')
+}
+
+async function fundRequest(id) {
+  await fetch(`${SERVER_URL}/api/requests/${id}/fund`, { method: 'POST' })
+  showToast('Escrow funded', 'success')
+  refreshRequests()
+}
+
+async function confirmRequest(id) {
+  await fetch(`${SERVER_URL}/api/requests/${id}/confirm`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmerId: myId }),
+  })
+  showToast('Confirmed', 'success')
+  refreshRequests()
+}
+
+async function confirmInstant(id) {
+  const fakeTxHash = 'demo-' + Math.random().toString(16).slice(2)
+  await fetch(`${SERVER_URL}/api/requests/${id}/confirm-instant`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ txHash: fakeTxHash }),
+  })
+  showToast('Payment sent', 'success')
+  refreshRequests()
+}
+
+async function showProof(id) {
+  const res = await fetch(`${SERVER_URL}/api/requests/${id}`)
+  const data = await res.json()
+  const r = data.request
+  document.getElementById('proof-content').innerHTML = `
+    <div class="proof-row"><span class="k">For</span><span class="v">${r.description}</span></div>
+    <div class="proof-row"><span class="k">Created</span><span class="v">${new Date(r.createdAt).toLocaleString()}</span></div>
+    ${r.fundedAt ? `<div class="proof-row"><span class="k">Funded</span><span class="v">${new Date(r.fundedAt).toLocaleString()}</span></div>` : ''}
+    <div class="proof-row"><span class="k">Settled</span><span class="v">${new Date(r.settledAt).toLocaleString()}</span></div>
+    <div class="proof-row"><span class="k">Amount</span><span class="v">${r.amount} NIM</span></div>
+    <div class="tx-hash-box"><span class="lbl">Transaction hash</span>${r.txHash}</div>
+  `
+  document.getElementById('proof-modal').classList.add('active')
+}
+
+document.getElementById('btn-close-proof').addEventListener('click', () => {
+  document.getElementById('proof-modal').classList.remove('active')
+})
+
+setInterval(() => { if (myId) refreshRequests() }, 3000)
+</script>
+
+</body>
+</html>

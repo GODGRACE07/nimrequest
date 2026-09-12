@@ -1,0 +1,11 @@
+{
+  "name": "nimrequest-server",
+  "version": "1.0.0",
+  "description": "NimRequest server - payment requests with instant and escrow-until-confirmed settlement",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,4 @@
+node_modules/
+**/escrow-wallet-key.txt
+*.log
+requests-data.json
