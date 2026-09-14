@@ -19,7 +19,9 @@ async function getClient() {
 }
 
 function getEscrowKeyPair() {
-  const savedKeyHex = readFileSync('escrow-wallet-key.txt', 'utf-8').trim()
+  const savedKeyHex = process.env.ESCROW_PRIVATE_KEY
+    ? process.env.ESCROW_PRIVATE_KEY.trim()
+    : readFileSync('escrow-wallet-key.txt', 'utf-8').trim()
   return KeyPair.fromHex(savedKeyHex)
 }
 

@@ -1,8 +1,3 @@
-// ============================================================
-// NimRequest — server.js
-// Testnet only. Zero external dependencies beyond @nimiq/core.
-// ============================================================
-
 import http from 'http'
 import { KeyPair } from '@nimiq/core'
 import { payoutWinner } from './payout.js'
@@ -15,8 +10,11 @@ import {
   getRequestsForUser,
   getSettleStreak,
   getOverdueUnconfirmed,
+  getFailedPayouts,
   persist,
   normalizeId,
+  getUserCount,
+  getAllUsers,
 } from './data.js'
 
 function sendJson(res, statusCode, data) {
@@ -44,30 +42,21 @@ function readBody(req) {
 async function handleGenerateWallet(req, res) {
   const keyPair = KeyPair.generate()
   const address = keyPair.toAddress()
-
   try {
     await fetch('https://faucet.pos.nimiq-testnet.com/tapit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        address: address.toUserFriendlyAddress(),
-        withStackingContract: false,
-      }),
+      body: JSON.stringify({ address: address.toUserFriendlyAddress(), withStackingContract: false }),
     })
   } catch (err) {
     console.error('Faucet request failed:', err.message)
   }
-
-  sendJson(res, 200, {
-    address: address.toUserFriendlyAddress(),
-    privateKeyHex: keyPair.toHex(),
-  })
+  sendJson(res, 200, { address: address.toUserFriendlyAddress(), privateKeyHex: keyPair.toHex() })
 }
 
 async function handleTopUp(req, res) {
   const { address } = await readBody(req)
   if (!address) return sendJson(res, 400, { error: 'address required' })
-
   try {
     await fetch('https://faucet.pos.nimiq-testnet.com/tapit', {
       method: 'POST',
@@ -109,6 +98,18 @@ async function handleFundEscrow(req, res, requestId) {
   sendJson(res, 200, { request: updated })
 }
 
+async function tryPayout(request) {
+  try {
+    const receipt = await payoutWinner(request.fromAddress, request.amount)
+    markSettled(request.id, receipt.transactionHash)
+    console.log('✅ Paid out request', request.id)
+  } catch (err) {
+    request.payoutError = err.message
+    persist()
+    console.error('❌ Payout failed for', request.id, ':', err.message)
+  }
+}
+
 async function handleConfirm(req, res, requestId) {
   const { confirmerId } = await readBody(req)
   const request = getRequest(requestId)
@@ -123,13 +124,7 @@ async function handleConfirm(req, res, requestId) {
   persist()
 
   if (request.confirmedByFrom && request.confirmedByTo) {
-    try {
-      const receipt = await payoutWinner(request.fromAddress, request.amount)
-      markSettled(request.id, receipt.transactionHash)
-    } catch (err) {
-      request.payoutError = err.message
-      persist()
-    }
+    await tryPayout(request)
   }
 
   sendJson(res, 200, { request })
@@ -153,16 +148,24 @@ function handleGetUserRequests(req, res, userId) {
   sendJson(res, 200, { requests: getRequestsForUser(userId), streak: getSettleStreak(userId) })
 }
 
+function handleStats(req, res) {
+  sendJson(res, 200, { totalUsers: getUserCount(), users: getAllUsers() })
+}
+
+// Retries any escrow requests that were fully confirmed but never
+// actually paid out (e.g. from before the escrow key fix was deployed).
+async function retryStuckPayouts() {
+  const stuck = getFailedPayouts()
+  for (const request of stuck) {
+    console.log('🔁 Retrying stuck payout for', request.id)
+    await tryPayout(request)
+  }
+}
+
 setInterval(async () => {
   const overdue = getOverdueUnconfirmed()
   for (const request of overdue) {
-    try {
-      const receipt = await payoutWinner(request.fromAddress, request.amount)
-      markSettled(request.id, receipt.transactionHash)
-      console.log('⏰ Auto-released overdue escrow request', request.id)
-    } catch (err) {
-      console.error('Auto-release failed for', request.id, ':', err.message)
-    }
+    await tryPayout(request)
   }
 }, 60 * 1000)
 
@@ -187,6 +190,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && parts[3] === 'dispute') return await handleDispute(req, res, parts[2])
     if (req.method === 'GET' && parts[1] === 'requests' && parts.length === 3) return handleGetRequest(req, res, parts[2])
     if (req.method === 'GET' && parts[1] === 'users' && parts.length === 3) return handleGetUserRequests(req, res, parts[2])
+    if (req.method === 'GET' && parts[0] === 'api' && parts[1] === 'stats') return handleStats(req, res)
     sendJson(res, 404, { error: 'Not found' })
   } catch (err) {
     sendJson(res, 500, { error: err.message })
@@ -196,6 +200,9 @@ const server = http.createServer(async (req, res) => {
 const PORT = process.env.PORT || 3002
 server.listen(PORT, () => {
   console.log(`NimRequest server running on port ${PORT}`)
+  // Automatically fix any escrow requests that got stuck before the
+  // escrow key was properly configured on this deployment.
+  retryStuckPayouts()
 })
 
 export default server
