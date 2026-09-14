@@ -1,15 +1,17 @@
 // ============================================================
 // NimRequest — data.js
-// Persists to a local JSON file so request data survives
-// server restarts. Simple file storage — swap for a real
-// database (e.g. Supabase/Postgres) before scaling beyond
-// a hackathon demo.
+// Persists to a JSON file so request data survives server
+// restarts and redeploys. Set DATA_DIR (via a Railway Volume)
+// to a persistent mount path in production; falls back to the
+// local folder when DATA_DIR isn't set (e.g. running locally).
+// Names are normalized (trimmed, lowercased) everywhere so
+// "Mike", "MIKE", and "mike" are always the same person.
 // ============================================================
 
 import crypto from 'crypto'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 
-const DATA_FILE = 'requests-data.json'
+const DATA_FILE = process.env.DATA_DIR ? `${process.env.DATA_DIR}/requests-data.json` : 'requests-data.json'
 
 function loadPersisted() {
   if (!existsSync(DATA_FILE)) return new Map()
@@ -37,7 +39,14 @@ function newId() {
   return crypto.randomBytes(8).toString('hex')
 }
 
+function normalizeId(id) {
+  return String(id || '').trim().toLowerCase()
+}
+
 export function createRequest({ type, fromId, fromAddress, toId, toAddress, amount, description, deadlineHours }) {
+  fromId = normalizeId(fromId)
+  toId = normalizeId(toId)
+
   const id = newId()
   const request = {
     id,
@@ -95,10 +104,12 @@ export function markDisputed(id, note) {
 }
 
 export function getRequestsForUser(userId) {
+  userId = normalizeId(userId)
   return Array.from(requests.values()).filter(r => r.fromId === userId || r.toId === userId)
 }
 
 export function getSettleStreak(userId) {
+  userId = normalizeId(userId)
   const settled = Array.from(requests.values())
     .filter(r => r.toId === userId && r.status === 'settled')
     .sort((a, b) => b.settledAt - a.settledAt)
@@ -116,3 +127,5 @@ export function getOverdueUnconfirmed() {
     r => r.type === 'escrow' && r.status === 'funded' && r.deadlineAt && now > r.deadlineAt
   )
 }
+
+export { normalizeId }

@@ -188,10 +188,7 @@
   .empty-note { font-size: 0.85rem; color: var(--ink-text-soft); line-height: 1.55; padding: 4px 2px; }
   .empty-card { background: var(--parchment-card); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft); }
 
-  /* --- Loading skeletons --- */
-  .skeleton-card {
-    background: var(--parchment-card); border-radius: 16px; padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow-soft);
-  }
+  .skeleton-card { background: var(--parchment-card); border-radius: 16px; padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow-soft); }
   .skeleton-bar { background: linear-gradient(90deg, var(--parchment-dim) 25%, #F5EEDC 50%, var(--parchment-dim) 75%); background-size: 200% 100%; animation: shimmerBar 1.4s ease-in-out infinite; border-radius: 6px; }
   @keyframes shimmerBar { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   .skeleton-bar.title { width: 60%; height: 16px; margin-bottom: 8px; }
@@ -225,7 +222,6 @@
   .tx-hash-box { background: var(--ink-navy); color: var(--sage); border-radius: 10px; padding: 12px; font-size: 0.7rem; word-break: break-all; margin-top: 14px; font-family: 'Inter', monospace; line-height: 1.5; }
   .tx-hash-box .lbl { color: #B7C2D4; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.72rem; margin-bottom: 6px; display: block; }
 
-  /* --- Toast notifications (replaces native alert()) --- */
   #toast-container {
     position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 400px; padding: 0 16px; z-index: 100;
@@ -358,7 +354,10 @@ const SERVER_URL = 'https://nimrequest-production.up.railway.app'
 let myId = null
 let myAddress = null
 
-// --- Toast notifications: replaces every native alert() ---
+function normalizeId(id) {
+  return String(id || '').trim().toLowerCase()
+}
+
 function showToast(message, type = 'default') {
   const container = document.getElementById('toast-container')
   const toast = document.createElement('div')
@@ -402,7 +401,7 @@ function showRequestsSkeleton() {
 
 // --- Wallet creation flow ---
 document.getElementById('btn-create-wallet').addEventListener('click', async () => {
-  const name = document.getElementById('my-id').value.trim()
+  const name = normalizeId(document.getElementById('my-id').value)
   if (!name) { showToast('Pick a name first', 'error'); return }
 
   const btn = document.getElementById('btn-create-wallet')
@@ -437,7 +436,7 @@ document.getElementById('btn-show-existing').addEventListener('click', () => {
 })
 
 document.getElementById('btn-use-existing').addEventListener('click', () => {
-  const name = document.getElementById('my-id').value.trim()
+  const name = normalizeId(document.getElementById('my-id').value)
   const address = document.getElementById('my-address').value.trim()
   if (!name || !address) { showToast('Enter both a name and an address', 'error'); return }
   myId = name
@@ -491,7 +490,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedId = localStorage.getItem('nimrequest_id')
   const savedAddress = localStorage.getItem('nimrequest_address')
   if (savedId && savedAddress) {
-    myId = savedId
+    myId = normalizeId(savedId)
     myAddress = savedAddress
     enterHomeView()
   }
@@ -511,7 +510,7 @@ function getSelectedType() { return document.querySelector('.type-option.active'
 document.getElementById('btn-create-request').addEventListener('click', async () => {
   const type = getSelectedType()
   const description = document.getElementById('req-description').value.trim()
-  const toId = document.getElementById('req-counterparty-id').value.trim()
+  const toId = normalizeId(document.getElementById('req-counterparty-id').value)
   const toAddress = document.getElementById('req-counterparty-address').value.trim()
   const amount = parseFloat(document.getElementById('req-amount').value)
   const deadlineHours = parseFloat(document.getElementById('req-deadline').value) || 24

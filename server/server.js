@@ -1,7 +1,6 @@
 // ============================================================
 // NimRequest — server.js
 // Testnet only. Zero external dependencies beyond @nimiq/core.
-// Request data now persists to disk across restarts.
 // ============================================================
 
 import http from 'http'
@@ -17,6 +16,7 @@ import {
   getSettleStreak,
   getOverdueUnconfirmed,
   persist,
+  normalizeId,
 } from './data.js'
 
 function sendJson(res, statusCode, data) {
@@ -115,11 +115,12 @@ async function handleConfirm(req, res, requestId) {
   if (!request) return sendJson(res, 404, { error: 'Request not found' })
   if (request.status !== 'funded') return sendJson(res, 400, { error: 'Request is not in a confirmable state' })
 
-  if (confirmerId === request.fromId) request.confirmedByFrom = true
-  else if (confirmerId === request.toId) request.confirmedByTo = true
+  const normalizedConfirmerId = normalizeId(confirmerId)
+  if (normalizedConfirmerId === request.fromId) request.confirmedByFrom = true
+  else if (normalizedConfirmerId === request.toId) request.confirmedByTo = true
   else return sendJson(res, 403, { error: 'confirmerId not part of this request' })
 
-  persist() // save the partial confirmation immediately, even before both sides confirm
+  persist()
 
   if (request.confirmedByFrom && request.confirmedByTo) {
     try {
