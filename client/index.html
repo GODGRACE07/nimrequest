@@ -67,9 +67,7 @@
     width: 30px; height: 30px; background: var(--amber); border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Fraunces', serif; font-weight: 800; color: var(--ink-navy); font-size: 1rem; flex-shrink: 0;
-    animation: markPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  @keyframes markPop { 0% { transform: scale(0) rotate(-15deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
   header .wordmark { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.45rem; letter-spacing: -0.01em; }
   header .tagline { font-size: 0.86rem; color: #B7C2D4; line-height: 1.4; max-width: 300px; }
   .network-tag {
@@ -86,14 +84,8 @@
   .hero-explainer { display: flex; gap: 12px; margin-bottom: 22px; }
   .hero-step {
     flex: 1; background: var(--parchment-card); border-radius: 14px; padding: 14px 10px;
-    text-align: center; box-shadow: var(--shadow-soft); opacity: 0; animation: stepIn 0.4s ease forwards;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    text-align: center; box-shadow: var(--shadow-soft);
   }
-  .hero-step:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
-  .hero-step:nth-child(1) { animation-delay: 0.05s; }
-  .hero-step:nth-child(2) { animation-delay: 0.18s; }
-  .hero-step:nth-child(3) { animation-delay: 0.31s; }
-  @keyframes stepIn { from { opacity: 0; transform: translateY(8px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
   .hero-step .icon { font-size: 1.3rem; margin-bottom: 6px; display: inline-block; }
   .hero-step .txt { font-size: 0.7rem; color: var(--ink-text-soft); line-height: 1.35; font-weight: 500; }
 
@@ -121,7 +113,6 @@
   .btn.outline { background: transparent; border: 1.5px solid var(--ink-navy); color: var(--ink-navy); box-shadow: none; }
   .btn.ghost { background: transparent; color: var(--ink-text-soft); font-size: 0.8rem; padding: 8px; font-weight: 500; width: auto; }
 
-  .wallet-choice { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
   .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--ink-text-soft); font-size: 0.75rem; }
   .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--parchment-dim); }
 
@@ -133,7 +124,7 @@
 
   .wallet-reveal {
     background: var(--sage-dim); border-radius: 12px; padding: 14px; margin-top: 14px;
-    font-size: 0.78rem; color: var(--ink-text); line-height: 1.5; animation: cardIn 0.3s ease;
+    font-size: 0.78rem; color: var(--ink-text); line-height: 1.5;
   }
   .wallet-reveal .addr { font-family: monospace; font-size: 0.72rem; word-break: break-all; margin-top: 4px; color: var(--sage); font-weight: 700; }
 
@@ -146,12 +137,9 @@
 
   .req-card {
     background: var(--parchment-card); border-radius: 16px; padding: 18px; margin-bottom: 12px;
-    box-shadow: var(--shadow-soft); opacity: 0; animation: cardIn 0.35s ease forwards;
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
+    box-shadow: var(--shadow-soft); transition: box-shadow 0.2s ease;
   }
-  .req-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
-  .req-card.just-settled { animation: cardIn 0.35s ease forwards, settleFlash 1.2s ease 0.35s; }
-  @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .req-card.just-settled { animation: settleFlash 1.2s ease; }
   @keyframes settleFlash { 0% { box-shadow: var(--shadow-soft); } 30% { box-shadow: 0 0 0 3px var(--sage), 0 8px 24px rgba(92,131,116,0.3); } 100% { box-shadow: var(--shadow-soft); } }
   .req-card .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
   .req-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 8px; }
@@ -164,9 +152,8 @@
   .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; }
   .badge.pending { background: var(--amber-dim); color: #8a6420; }
   .badge.funded { background: #E4ECF7; color: #3a5a8c; }
-  .badge.settled { background: var(--sage-dim); color: var(--sage); animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .badge.settled { background: var(--sage-dim); color: var(--sage); }
   .badge.disputed { background: var(--rust-dim); color: var(--rust); }
-  @keyframes badgePop { 0% { transform: scale(0.7); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
   .shimmer-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: shimmerPulse 1.3s ease-in-out infinite; }
   @keyframes shimmerPulse { 0%,100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
 
@@ -174,14 +161,14 @@
   .waiting-note { font-size: 0.8rem; color: var(--ink-text-soft); font-style: italic; display: flex; align-items: center; gap: 6px; }
   .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); animation: pulse 1.4s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
-  .proof-link { font-size: 0.8rem; color: var(--sage); margin-top: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: gap 0.15s ease; }
-  .proof-link:hover { gap: 8px; text-decoration: underline; }
+  .proof-link { font-size: 0.8rem; color: var(--sage); margin-top: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+  .proof-link:hover { text-decoration: underline; }
 
-  .streak-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 4px; border-bottom: 1px solid var(--parchment-dim); opacity: 0; animation: cardIn 0.3s ease forwards; }
+  .streak-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 4px; border-bottom: 1px solid var(--parchment-dim); }
   .streak-row:last-child { border-bottom: none; }
   .streak-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.95rem; }
   .streak-meta { font-size: 0.74rem; color: var(--ink-text-soft); margin-top: 2px; }
-  .streak-badge { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .streak-badge { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
   .streak-badge.hit { background: var(--sage-dim); }
   .streak-badge.miss { background: var(--amber-dim); }
 
@@ -201,22 +188,15 @@
     display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 20px; gap: 8px;
   }
   .nav-item { font-size: 0.8rem; color: var(--ink-navy); font-weight: 700; letter-spacing: 0.03em; flex-shrink: 0; }
-  .nav-balance { font-size: 0.72rem; color: var(--ink-text-soft); font-weight: 600; flex-shrink: 0; transition: color 0.15s ease; }
-  .nav-balance:hover { color: var(--amber); }
+  .nav-balance { font-size: 0.72rem; color: var(--ink-text-soft); font-weight: 600; flex-shrink: 0; cursor: pointer; text-decoration: underline; }
 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(30,42,61,0.72); display: none; align-items: center; justify-content: center; z-index: 10; padding: 20px; }
-  .modal-backdrop.active { display: flex; animation: fadeIn 0.2s ease; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal { background: var(--parchment-card); border-radius: 20px; padding: 26px 22px; width: 100%; max-width: 380px; max-height: 82vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  @keyframes modalIn { from { opacity: 0; transform: scale(0.85) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-  .seal { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(155deg, var(--sage) 0%, #4A6D5F 100%); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; margin: 0 auto 14px; box-shadow: 0 6px 16px rgba(92,131,116,0.35); animation: sealSpin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards; }
-  @keyframes sealSpin { from { transform: scale(0) rotate(-90deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+  .modal-backdrop.active { display: flex; }
+  .modal { background: var(--parchment-card); border-radius: 20px; padding: 26px 22px; width: 100%; max-width: 380px; max-height: 82vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .seal { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(155deg, var(--sage) 0%, #4A6D5F 100%); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #fff; margin: 0 auto 14px; box-shadow: 0 6px 16px rgba(92,131,116,0.35); }
   .modal h3 { font-family: 'Fraunces', serif; text-align: center; font-size: 1.2rem; margin-bottom: 2px; }
   .modal .modal-sub { text-align: center; font-size: 0.8rem; color: var(--ink-text-soft); margin-bottom: 18px; }
-  .proof-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 10px 0; border-bottom: 1px solid var(--parchment-dim); opacity: 0; animation: rowSlideIn 0.3s ease forwards; }
-  .proof-row:nth-child(1) { animation-delay: 0.15s; } .proof-row:nth-child(2) { animation-delay: 0.22s; }
-  .proof-row:nth-child(3) { animation-delay: 0.29s; } .proof-row:nth-child(4) { animation-delay: 0.36s; } .proof-row:nth-child(5) { animation-delay: 0.43s; }
-  @keyframes rowSlideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .proof-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 10px 0; border-bottom: 1px solid var(--parchment-dim); }
   .proof-row .k { color: var(--ink-text-soft); font-weight: 500; }
   .proof-row .v { text-align: right; font-weight: 600; }
   .tx-hash-box { background: var(--ink-navy); color: var(--sage); border-radius: 10px; padding: 12px; font-size: 0.7rem; word-break: break-all; margin-top: 14px; font-family: 'Inter', monospace; line-height: 1.5; }
@@ -232,12 +212,12 @@
     padding: 13px 16px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;
     box-shadow: 0 8px 24px rgba(0,0,0,0.25);
     display: flex; align-items: center; gap: 10px;
-    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), toastOut 0.25s ease 2.7s forwards;
+    animation: toastIn 0.3s ease, toastOut 0.25s ease 2.7s forwards;
   }
   .toast.error { background: var(--rust); }
   .toast.success { background: var(--sage); }
-  @keyframes toastIn { from { opacity: 0; transform: translateY(-14px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.97); } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-10px); } }
 </style>
 </head>
 <body>
@@ -255,7 +235,6 @@
   </header>
 
   <main>
-    <!-- SETUP -->
     <div class="view active" id="view-setup">
       <div class="hero-explainer">
         <div class="hero-step"><div class="icon">✍️</div><div class="txt">Request what's owed</div></div>
@@ -263,12 +242,10 @@
         <div class="hero-step"><div class="icon">✅</div><div class="txt">Settled with proof</div></div>
       </div>
 
-      <div class="setup-box" id="wallet-choice-box">
+      <div class="setup-box">
         <div class="label">Get started</div>
-        <div class="wallet-choice">
-          <input type="text" id="my-id" placeholder="Pick a name (e.g. alice)">
-          <button class="btn amber" id="btn-create-wallet">✨ Create my wallet (instant, free)</button>
-        </div>
+        <input type="text" id="my-id" placeholder="Pick a name (e.g. alice)">
+        <button class="btn amber" id="btn-create-wallet">✨ Create my wallet (instant, free)</button>
         <div class="wallet-reveal" id="wallet-reveal" style="display:none;">
           <b>Your wallet is ready!</b>
           <div>We've also sent you free test NIM to try the app.</div>
@@ -283,7 +260,6 @@
       </div>
     </div>
 
-    <!-- HOME -->
     <div class="view" id="view-home">
       <section>
         <div class="section-label">New request</div>
@@ -321,7 +297,7 @@
   <nav>
     <div class="nav-item">NimRequest</div>
     <button class="btn ghost" id="btn-topup" style="display:none;">🔄 Get more test NIM</button>
-    <div class="nav-balance" id="nav-balance" style="display:none; cursor:pointer; text-decoration:underline;"></div>
+    <div class="nav-balance" id="nav-balance" style="display:none;"></div>
   </nav>
 </div>
 
@@ -353,10 +329,9 @@
 const SERVER_URL = 'https://nimrequest-production.up.railway.app'
 let myId = null
 let myAddress = null
+let lastRenderedSnapshot = null
 
-function normalizeId(id) {
-  return String(id || '').trim().toLowerCase()
-}
+function normalizeId(id) { return String(id || '').trim().toLowerCase() }
 
 function showToast(message, type = 'default') {
   const container = document.getElementById('toast-container')
@@ -375,6 +350,13 @@ function markSeenSettled(id) {
   const seen = getSeenSettled()
   seen[id] = true
   localStorage.setItem('nimrequest_seen_settled', JSON.stringify(seen))
+}
+
+async function claimIdentity(name, address) {
+  const res = await fetch(`${SERVER_URL}/api/identity/claim`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: name, address }),
+  })
+  return res.json()
 }
 
 function enterHomeView() {
@@ -399,7 +381,6 @@ function showRequestsSkeleton() {
   `).join('')
 }
 
-// --- Wallet creation flow ---
 document.getElementById('btn-create-wallet').addEventListener('click', async () => {
   const name = normalizeId(document.getElementById('my-id').value)
   if (!name) { showToast('Pick a name first', 'error'); return }
@@ -412,6 +393,9 @@ document.getElementById('btn-create-wallet').addEventListener('click', async () 
     const res = await fetch(`${SERVER_URL}/api/wallet/generate`, { method: 'POST' })
     const data = await res.json()
 
+    const claim = await claimIdentity(name, data.address)
+    if (!claim.ok) { showToast(claim.error, 'error'); btn.disabled = false; btn.innerHTML = '✨ Create my wallet (instant, free)'; return }
+
     myId = name
     myAddress = data.address
 
@@ -423,7 +407,7 @@ document.getElementById('btn-create-wallet').addEventListener('click', async () 
     document.getElementById('wallet-reveal').style.display = 'block'
     showToast('Wallet created and funded!', 'success')
 
-    setTimeout(enterHomeView, 1400)
+    setTimeout(enterHomeView, 1200)
   } catch (err) {
     showToast('Wallet creation failed: ' + err.message, 'error')
     btn.disabled = false
@@ -435,10 +419,14 @@ document.getElementById('btn-show-existing').addEventListener('click', () => {
   document.getElementById('existing-wallet-fields').style.display = 'block'
 })
 
-document.getElementById('btn-use-existing').addEventListener('click', () => {
+document.getElementById('btn-use-existing').addEventListener('click', async () => {
   const name = normalizeId(document.getElementById('my-id').value)
   const address = document.getElementById('my-address').value.trim()
   if (!name || !address) { showToast('Enter both a name and an address', 'error'); return }
+
+  const claim = await claimIdentity(name, address)
+  if (!claim.ok) { showToast(claim.error, 'error'); return }
+
   myId = name
   myAddress = address
   localStorage.setItem('nimrequest_id', myId)
@@ -446,16 +434,13 @@ document.getElementById('btn-use-existing').addEventListener('click', () => {
   enterHomeView()
 })
 
-// --- Top up test NIM ---
 document.getElementById('btn-topup').addEventListener('click', async () => {
   const btn = document.getElementById('btn-topup')
   btn.disabled = true
   btn.textContent = 'Sending...'
   try {
     const res = await fetch(`${SERVER_URL}/api/wallet/topup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: myAddress }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address: myAddress }),
     })
     const data = await res.json()
     btn.textContent = data.ok ? '✓ Sent!' : 'Failed'
@@ -467,16 +452,13 @@ document.getElementById('btn-topup').addEventListener('click', async () => {
   setTimeout(() => { btn.disabled = false; btn.textContent = '🔄 Get more test NIM' }, 2500)
 })
 
-// --- View my wallet address anytime ---
 document.getElementById('nav-balance').addEventListener('click', () => {
   document.getElementById('my-wallet-address-display').textContent = myAddress
   document.getElementById('wallet-modal').classList.add('active')
 })
-
 document.getElementById('btn-close-wallet').addEventListener('click', () => {
   document.getElementById('wallet-modal').classList.remove('active')
 })
-
 document.getElementById('btn-copy-address').addEventListener('click', () => {
   navigator.clipboard.writeText(myAddress)
   const btn = document.getElementById('btn-copy-address')
@@ -485,7 +467,6 @@ document.getElementById('btn-copy-address').addEventListener('click', () => {
   setTimeout(() => { btn.textContent = '📋 Copy address' }, 1500)
 })
 
-// --- Auto-login if we already have a saved identity ---
 window.addEventListener('DOMContentLoaded', () => {
   const savedId = localStorage.getItem('nimrequest_id')
   const savedAddress = localStorage.getItem('nimrequest_address')
@@ -536,6 +517,9 @@ async function refreshRequests() {
   try {
     const res = await fetch(`${SERVER_URL}/api/users/${myId}`)
     const data = await res.json()
+    const snapshot = JSON.stringify(data)
+    if (snapshot === lastRenderedSnapshot) return
+    lastRenderedSnapshot = snapshot
     renderRequests(data.requests || [])
     renderStreak(data.streak || [])
   } catch (err) {
@@ -558,13 +542,12 @@ function renderRequests(requests) {
 
   const seenSettled = getSeenSettled()
 
-  requests.sort((a, b) => b.createdAt - a.createdAt).forEach((r, idx) => {
+  requests.sort((a, b) => b.createdAt - a.createdAt).forEach(r => {
     const iAmOwed = r.fromId === myId
     const card = document.createElement('div')
 
     const justSettled = r.status === 'settled' && !seenSettled[r.id]
     card.className = 'req-card' + (justSettled ? ' just-settled' : '')
-    card.style.animationDelay = (idx * 0.06) + 's'
     if (r.status === 'settled') markSeenSettled(r.id)
 
     let actionsHtml = ''
@@ -607,8 +590,8 @@ function renderStreak(streak) {
     box.innerHTML = `<div class="empty-note">Shows how promptly people you've dealt with have paid — no scores, no shaming, just a quiet, honest record.</div>`
     return
   }
-  box.innerHTML = streak.map((s, idx) => `
-    <div class="streak-row" style="animation-delay:${idx * 0.08}s">
+  box.innerHTML = streak.map(s => `
+    <div class="streak-row">
       <div>
         <div class="streak-name">Request #${s.requestId.slice(0,6)}</div>
         <div class="streak-meta">${s.hoursToSettle.toFixed(1)}h to settle</div>
@@ -621,6 +604,7 @@ function renderStreak(streak) {
 async function fundRequest(id) {
   await fetch(`${SERVER_URL}/api/requests/${id}/fund`, { method: 'POST' })
   showToast('Escrow funded', 'success')
+  lastRenderedSnapshot = null
   refreshRequests()
 }
 
@@ -629,15 +613,14 @@ async function confirmRequest(id) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirmerId: myId }),
   })
   showToast('Confirmed', 'success')
+  lastRenderedSnapshot = null
   refreshRequests()
 }
 
 async function confirmInstant(id) {
-  const fakeTxHash = 'demo-' + Math.random().toString(16).slice(2)
-  await fetch(`${SERVER_URL}/api/requests/${id}/confirm-instant`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ txHash: fakeTxHash }),
-  })
+  await fetch(`${SERVER_URL}/api/requests/${id}/confirm-instant`, { method: 'POST' })
   showToast('Payment sent', 'success')
+  lastRenderedSnapshot = null
   refreshRequests()
 }
 

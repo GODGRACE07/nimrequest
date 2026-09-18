@@ -15,6 +15,7 @@ import {
   normalizeId,
   getUserCount,
   getAllUsers,
+  claimOrVerifyIdentity,
 } from './data.js'
 
 function sendJson(res, statusCode, data) {
@@ -69,6 +70,14 @@ async function handleTopUp(req, res) {
   }
 }
 
+async function handleClaimIdentity(req, res) {
+  const { id, address } = await readBody(req)
+  if (!id || !address) return sendJson(res, 400, { error: 'id and address required' })
+  const result = claimOrVerifyIdentity(id, address)
+  if (!result.ok) return sendJson(res, 409, { error: result.error })
+  sendJson(res, 200, { ok: true })
+}
+
 async function handleCreate(req, res) {
   const { type, fromId, fromAddress, toId, toAddress, amount, description, deadlineHours } = await readBody(req)
   if (!type || !fromId || !fromAddress || !toId || !toAddress || !amount) {
@@ -81,13 +90,30 @@ async function handleCreate(req, res) {
   sendJson(res, 200, { request })
 }
 
+async function tryPayout(request) {
+  try {
+    const receipt = await payoutWinner(request.fromAddress, request.amount)
+    markSettled(request.id, receipt.transactionHash)
+    console.log('✅ Paid out request', request.id)
+    return true
+  } catch (err) {
+    request.payoutError = err.message
+    persist()
+    console.error('❌ Payout failed for', request.id, ':', err.message)
+    return false
+  }
+}
+
 async function handleConfirmInstant(req, res, requestId) {
-  const { txHash } = await readBody(req)
   const request = getRequest(requestId)
   if (!request) return sendJson(res, 404, { error: 'Request not found' })
   if (request.type !== 'instant') return sendJson(res, 400, { error: 'Not an instant request' })
-  const updated = markSettled(requestId, txHash)
-  sendJson(res, 200, { request: updated })
+  if (request.status === 'settled') return sendJson(res, 200, { request })
+
+  const ok = await tryPayout(request)
+  if (!ok) return sendJson(res, 500, { error: 'Payout failed', request: getRequest(requestId) })
+
+  sendJson(res, 200, { request: getRequest(requestId) })
 }
 
 async function handleFundEscrow(req, res, requestId) {
@@ -96,18 +122,6 @@ async function handleFundEscrow(req, res, requestId) {
   if (request.type !== 'escrow') return sendJson(res, 400, { error: 'Not an escrow request' })
   const updated = markFunded(requestId)
   sendJson(res, 200, { request: updated })
-}
-
-async function tryPayout(request) {
-  try {
-    const receipt = await payoutWinner(request.fromAddress, request.amount)
-    markSettled(request.id, receipt.transactionHash)
-    console.log('✅ Paid out request', request.id)
-  } catch (err) {
-    request.payoutError = err.message
-    persist()
-    console.error('❌ Payout failed for', request.id, ':', err.message)
-  }
 }
 
 async function handleConfirm(req, res, requestId) {
@@ -127,7 +141,7 @@ async function handleConfirm(req, res, requestId) {
     await tryPayout(request)
   }
 
-  sendJson(res, 200, { request })
+  sendJson(res, 200, { request: getRequest(requestId) })
 }
 
 async function handleDispute(req, res, requestId) {
@@ -152,8 +166,6 @@ function handleStats(req, res) {
   sendJson(res, 200, { totalUsers: getUserCount(), users: getAllUsers() })
 }
 
-// Retries any escrow requests that were fully confirmed but never
-// actually paid out (e.g. from before the escrow key fix was deployed).
 async function retryStuckPayouts() {
   const stuck = getFailedPayouts()
   for (const request of stuck) {
@@ -181,6 +193,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'wallet' && parts[2] === 'topup') {
       return await handleTopUp(req, res)
     }
+    if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'identity' && parts[2] === 'claim') {
+      return await handleClaimIdentity(req, res)
+    }
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'requests' && parts.length === 2) {
       return await handleCreate(req, res)
     }
@@ -200,8 +215,6 @@ const server = http.createServer(async (req, res) => {
 const PORT = process.env.PORT || 3002
 server.listen(PORT, () => {
   console.log(`NimRequest server running on port ${PORT}`)
-  // Automatically fix any escrow requests that got stuck before the
-  // escrow key was properly configured on this deployment.
   retryStuckPayouts()
 })
 
